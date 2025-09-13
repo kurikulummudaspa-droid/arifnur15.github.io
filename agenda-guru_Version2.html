@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{--bg:#f7f8fb;--card:#ffffff;--muted:#6b7280;--accent:#0f62fe}
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;line-height:1.45;background:var(--bg);padding:16px;color:#111}
+    .container{max-width:900px;margin:0 auto}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    h1{font-size:1.15rem;margin:0}
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(12,18,26,0.06);margin-bottom:12px}
+    label{display:block;font-size:.85rem;margin-bottom:6px;color:var(--muted)}
+    input[type=text],input[type=date],select,textarea{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:.95rem}
+    textarea{min-height:88px}
+    .grid{display:grid;gap:12px}
+    .cols-2{grid-template-columns:1fr 1fr}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(15,98,254,0.12)}
+    .small{padding:6px 8px;font-size:.85rem}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f1f3f6;text-align:left;font-size:.95rem}
+    .muted{color:var(--muted);font-size:.9rem}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef4ff;color:var(--accent);font-weight:600;font-size:.85rem}
+    @media(max-width:640px){.cols-2{grid-template-columns:1fr}header{gap:8px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="card" style="padding:10px 14px">
+        <div class="tag">AGENDA</div>
+      </div>
+      <div style="flex:1">
+        <h1>Agenda Guru</h1>
+        <div class="muted">SMA MUHAMMADIYAH SINGAPARNA</div>
+      </div>
+    </header>
+
+    <!-- IDENTITAS -->
+    <section class="card" id="section-identitas">
+      <h2 style="margin-top:0">1. Identitas</h2>
+      <div class="grid cols-2">
+        <div>
+          <label for="nama">Nama Guru</label>
+          <input id="nama" type="text" placeholder="Nama lengkap">
+        </div>
+        <div>
+          <label for="nbm">NBM</label>
+          <input id="nbm" type="text" placeholder="Opsional">
+        </div>
+        <div>
+          <label for="tahunPelajaran">Tahun Pelajaran</label>
+          <input id="tahunPelajaran" type="text" placeholder="2025 / XI IPA 1">
+        </div>
+      </div>
+    </section>
+
+    <!-- CATATAN HARIAN -->
+    <section class="card" id="section-catatan">
+      <h2 style="margin-top:0">2. Catatan Harian</h2>
+      <div class="grid">
+        <div class="cols-2">
+          <div>
+            <label for="tanggal">Tanggal</label>
+            <input id="tanggal" type="date">
+          </div>
+          <div>
+            <label for="kelas">Kelas / Mata Pelajaran</label>
+            <input id="kelas" type="text" placeholder="XI IPA / Kimia">
+          </div>
+        </div>
+        <div>
+          <label for="catatanArea">Catatan</label>
+          <textarea id="catatanArea" placeholder="Tuliskan ringkasan kegiatan, hambatan, tindak lanjut..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="tambahCatatan">Tambah ke daftar</button>
+          <button class="ghost small" id="bersihkanCatatan">Bersihkan form</button>
+        </div>
+
+        <div>
+          <h3 style="margin:8px 0">Daftar Catatan</h3>
+          <table id="tabelCatatan">
+            <thead><tr><th>Tanggal</th><th>Kelas/Mapel</th><th>Ringkasan</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUKU YANG DIBACA -->
+    <section class="card" id="section-buku">
+      <h2 style="margin-top:0">3. Buku yang Dibaca</h2>
+      <div class="grid cols-2">
+        <div>
+          <label for="judulBuku">Judul / Sumber</label>
+          <input id="judulBuku" type="text" placeholder="Judul buku atau URL sumber">
+        </div>
+        <div>
+          <label for="penulis">Penulis / Penerbit</label>
+          <input id="penulis" type="text" placeholder="Nama penulis atau penerbit">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="tambahBuku">Tambahkan</button>
+        <button class="ghost small" id="bersihkanBuku">Bersihkan form</button>
+      </div>
+      <div style="margin-top:12px">
+        <table id="tabelBuku"><thead><tr><th>Judul/Sumber</th><th>Penulis</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- KETERCApaian TUJUAN PEMBELAJARAN -->
+    <section class="card" id="section-ketercapaian">
+      <h2 style="margin-top:0">4. Ketercapaian Tujuan Pembelajaran</h2>
+      <div class="muted" style="margin-bottom:8px">Masukkan daftar tujuan, indikator, dan nilai ketercapaian (% atau rubrik).</div>
+      <div class="grid cols-2">
+        <div>
+          <label for="tujuan">Tujuan Pembelajaran</label>
+          <input id="tujuan" type="text" placeholder="Contoh: Siswa dapat menjelaskan faktor yang mempengaruhi laju reaksi">
+        </div>
+        <div>
+          <label for="indikator">Indikator / Aktivitas Penilaian</label>
+          <input id="indikator" type="text" placeholder="Indikator ketercapaian atau alat asesmen">
+        </div>
+      </div>
+      <div class="cols-2" style="display:grid;grid-template-columns:1fr 120px;gap:12px;margin-top:8px">
+        <div>
+          <label for="catatanKtg">Catatan / Tindak Lanjut</label>
+          <input id="catatanKtg" type="text" placeholder="Rekomendasi remedial, pengayaan...">
+        </div>
+        <div>
+          <label for="persen">Ketercapaian (%)</label>
+          <input id="persen" type="text" placeholder="80">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="tambahKtg">Tambahkan tujuan</button>
+        <button class="ghost small" id="bersihkanKtg">Bersihkan form</button>
+      </div>
+      <div style="margin-top:12px">
+        <table id="tabelKtg"><thead><tr><th>Tujuan</th><th>Indikator</th><th>Ketercapaian</th><th>Catatan</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- SHARE / EXPORT -->
+    <section class="card" id="section-share">
+      <h2 style="margin-top:0">5. Ekspor & Bagikan</h2>
+      <div class="muted">Anda bisa membagikan seluruh data dalam format JSON (tautan berbagi) atau mengunduh file untuk arsip.</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button id="buatTautan">Buat tautan berbagi</button>
+        <button id="salinTautan" class="ghost small">Salin tautan</button>
+        <button id="downloadJson">Unduh JSON</button>
+        <button id="resetAll" class="ghost small">Reset semua data</button>
+      </div>
+      <div style="margin-top:10px">
+        <label for="linkArea">Tautan berbagi (salin dan kirimkan ke kolega)</label>
+        <input id="linkArea" type="text" readonly>
+      </div>
+    </section>
+
+    <footer style="text-align:center;font-size:.85rem;margin-top:12px;color:var(--muted)">Versi sederhana • Cetak untuk dokumentasi • Data tersimpan pada browser (LocalStorage)</footer>
+  </div>
+
+  <script>
+    // Utilities
+    const $ = id => document.getElementById(id);
+    function saveToLocal(data){
+      try{localStorage.setItem('agendaGuruData', JSON.stringify(data))}catch(e){console.warn('Gagal menyimpan ke LocalStorage', e)}
+    }
+    function loadFromLocal(){
+      try{
+        return JSON.parse(localStorage.getItem('agendaGuruData') || 'null')
+      }catch(e){
+        console.warn('Gagal membaca LocalStorage', e); return null
+      }
+    }
+
+    // Application state with safe defaults
+    const state = {
+      identitas: { nama: '', sekolah: '', nip: '', tahunAjar: '' },
+      catatan: [],
+      buku: [],
+      ketercapaian: []
+    };
+
+    // Ensure state object always has correct shapes
+    function ensureStateDefaults(){
+      if(!state.identitas || typeof state.identitas !== 'object'){
+        state.identitas = { nama: '', sekolah: '', nip: '', tahunAjar: '' };
+      } else {
+        // ensure keys exist
+        state.identitas.nama = state.identitas.nama || '';
+        state.identitas.sekolah = state.identitas.sekolah || '';
+        state.identitas.nip = state.identitas.nip || '';
+        state.identitas.tahunAjar = state.identitas.tahunAjar || '';
+      }
+      if(!Array.isArray(state.catatan)) state.catatan = [];
+      if(!Array.isArray(state.buku)) state.buku = [];
+      if(!Array.isArray(state.ketercapaian)) state.ketercapaian = [];
+    }
+
+    // Merge incoming saved/hash data into state safely
+    function safeMergeState(source){
+      if(!source || typeof source !== 'object') return;
+      // merge identitas safely
+      const ident = (source.identitas && typeof source.identitas === 'object') ? source.identitas : {};
+      state.identitas = {
+        nama: ident.nama || state.identitas.nama || '',
+        sekolah: ident.sekolah || state.identitas.sekolah || '',
+        nip: ident.nip || state.identitas.nip || '',
+        tahunAjar: ident.tahunAjar || state.identitas.tahunAjar || ''
+      };
+      // merge arrays only if valid
+      state.catatan = Array.isArray(source.catatan) ? source.catatan : state.catatan;
+      state.buku = Array.isArray(source.buku) ? source.buku : state.buku;
+      state.ketercapaian = Array.isArray(source.ketercapaian) ? source.ketercapaian : state.ketercapaian;
+    }
+
+    // Rendering helpers (defensive: check elements exist)
+    function setValue(id, value){ const el = $(id); if(el) el.value = value; }
+    function renderAll(){
+      ensureStateDefaults();
+      const idf = state.identitas || {};
+      setValue('nama', idf.nama || '');
+      setValue('sekolah', idf.sekolah || '');
+      setValue('nip', idf.nip || '');
+      setValue('tahunAjar', idf.tahunAjar || '');
+
+      // catatan
+      const tabelCat = $('tabelCatatan') && $('tabelCatatan').querySelector('tbody'); if(tabelCat) tabelCat.innerHTML = '';
+      state.catatan.forEach((c,i)=>{
+        if(!tabelCat) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.tanggal||''}</td><td>${escapeHtml(c.kelas||'')}</td><td>${escapeHtml(c.catatan||'')}</td><td><button class='ghost small' data-i='${i}' data-type='delCat'>Hapus</button></td>`;
+        tabelCat.appendChild(tr);
+      });
+
+      // buku
+      const tabelBuku = $('tabelBuku') && $('tabelBuku').querySelector('tbody'); if(tabelBuku) tabelBuku.innerHTML = '';
+      state.buku.forEach((b,i)=>{
+        if(!tabelBuku) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(b.judul||'')}</td><td>${escapeHtml(b.penulis||'')}</td><td><button class='ghost small' data-i='${i}' data-type='delBuku'>Hapus</button></td>`;
+        tabelBuku.appendChild(tr);
+      });
+
+      // ketercapaian
+      const tabelKtg = $('tabelKtg') && $('tabelKtg').querySelector('tbody'); if(tabelKtg) tabelKtg.innerHTML = '';
+      state.ketercapaian.forEach((k,i)=>{
+        if(!tabelKtg) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(k.tujuan||'')}</td><td>${escapeHtml(k.indikator||'')}</td><td>${escapeHtml((k.persen||'') + (k.persen !== undefined && k.persen !== '' ? '%' : ''))}</td><td>${escapeHtml(k.catatan||'')}</td><td><button class='ghost small' data-i='${i}' data-type='delKtg'>Hapus</button></td>`;
+        tabelKtg.appendChild(tr);
+      });
+
+      saveToLocal(state);
+    }
+
+    function escapeHtml(s){return (s||'').toString().replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])}
+
+    // Load initial data safely
+    (function init(){
+      ensureStateDefaults();
+      const fromHash = window.location.hash.slice(1);
+      if(fromHash){
+        try{
+          const decoded = JSON.parse(decodeURIComponent(fromHash));
+          safeMergeState(decoded);
+          console.info('Data dimuat dari tautan berbagi');
+        }catch(e){
+          console.warn('Hash tidak berformat JSON atau tidak bisa didekode:', e);
+        }
+      }
+      const saved = loadFromLocal();
+      if(saved){
+        safeMergeState(saved);
+      }
+      renderAll();
+    })();
+
+    // Event listeners: add only if element exists
+    const identFields = ['nama','sekolah','nip','tahunAjar'];
+    identFields.forEach(id=>{
+      const el = $(id);
+      if(!el) return;
+      el.addEventListener('input', ()=>{
+        // read values defensively
+        state.identitas = state.identitas || { nama:'', sekolah:'', nip:'', tahunAjar:'' };
+        state.identitas.nama = ($('nama') && $('nama').value) || '';
+        state.identitas.sekolah = ($('sekolah') && $('sekolah').value) || '';
+        state.identitas.nip = ($('nip') && $('nip').value) || '';
+        state.identitas.tahunAjar = ($('tahunAjar') && $('tahunAjar').value) || '';
+        saveToLocal(state);
+      });
+    });
+
+    // Catatan actions
+    const tambahCatEl = $('tambahCatatan'); if(tambahCatEl){
+      tambahCatEl.addEventListener('click', ()=>{
+        const t = ($('tanggal') && $('tanggal').value) || new Date().toISOString().slice(0,10);
+        const k = ($('kelas') && $('kelas').value.trim()) || '';
+        const c = ($('catatanArea') && $('catatanArea').value.trim()) || '';
+        if(!c){alert('Catatan kosong. Mohon isi ringkasan.'); return}
+        state.catatan.unshift({tanggal:t,kelas:k,catatan:c}); renderAll();
+        if($('tanggal')) $('tanggal').value=''; if($('kelas')) $('kelas').value=''; if($('catatanArea')) $('catatanArea').value='';
+      });
+    }
+    const bersihkanCatEl = $('bersihkanCatatan'); if(bersihkanCatEl){
+      bersihkanCatEl.addEventListener('click', ()=>{ if($('tanggal')) $('tanggal').value=''; if($('kelas')) $('kelas').value=''; if($('catatanArea')) $('catatanArea').value=''; });
+    }
+
+    // Buku actions
+    const tambahBukuEl = $('tambahBuku'); if(tambahBukuEl){
+      tambahBukuEl.addEventListener('click', ()=>{
+        const j = ($('judulBuku') && $('judulBuku').value.trim()) || ''; const p = ($('penulis') && $('penulis').value.trim()) || '';
+        if(!j){alert('Masukkan judul/sumber');return}
+        state.buku.unshift({judul:j,penulis:p}); renderAll(); if($('judulBuku')) $('judulBuku').value=''; if($('penulis')) $('penulis').value='';
+      });
+    }
+    const bersihkanBukuEl = $('bersihkanBuku'); if(bersihkanBukuEl){ bersihkanBukuEl.addEventListener('click', ()=>{ if($('judulBuku')) $('judulBuku').value=''; if($('penulis')) $('penulis').value=''; }); }
+
+    // Ketercapaian actions
+    const tambahKtgEl = $('tambahKtg'); if(tambahKtgEl){
+      tambahKtgEl.addEventListener('click', ()=>{
+        const tujuan = ($('tujuan') && $('tujuan').value.trim()) || '';
+        const indikator = ($('indikator') && $('indikator').value.trim()) || '';
+        const catatanKtg = ($('catatanKtg') && $('catatanKtg').value.trim()) || '';
+        const persen = ($('persen') && $('persen').value.trim()) || '';
+        if(!tujuan){alert('Masukkan tujuan pembelajaran');return}
+        state.ketercapaian.unshift({tujuan,indikator,catatan:catatanKtg,persen}); renderAll();
+        if($('tujuan')) $('tujuan').value=''; if($('indikator')) $('indikator').value=''; if($('catatanKtg')) $('catatanKtg').value=''; if($('persen')) $('persen').value='';
+      });
+    }
+    const bersihkanKtgEl = $('bersihkanKtg'); if(bersihkanKtgEl){ bersihkanKtgEl.addEventListener('click', ()=>{ if($('tujuan')) $('tujuan').value=''; if($('indikator')) $('indikator').value=''; if($('catatanKtg')) $('catatanKtg').value=''; if($('persen')) $('persen').value=''; }); }
+
+    // Table delegation for delete buttons
+    document.addEventListener('click', e=>{
+      try{
+        const t = e.target.closest && e.target.closest('button'); if(!t) return; const type = t.dataset.type; const i = Number(t.dataset.i);
+        if(type==='delCat'){ state.catatan.splice(i,1); renderAll(); }
+        if(type==='delBuku'){ state.buku.splice(i,1); renderAll(); }
+        if(type==='delKtg'){ state.ketercapaian.splice(i,1); renderAll(); }
+      }catch(err){
+        console.warn('Error handling delegated click', err);
+      }
+    });
+
+    // Share / export
+    function buildPayload(){ ensureStateDefaults(); return Object.assign({}, state, {meta:{generatedAt:new Date().toISOString(),app:'Agenda Guru'}}) }
+
+    const buatTautanEl = $('buatTautan'); if(buatTautanEl){
+      buatTautanEl.addEventListener('click', ()=>{
+        try{
+          const payload = buildPayload();
+          const compressed = encodeURIComponent(JSON.stringify(payload));
+          const url = location.origin + location.pathname + '#' + compressed;
+          if($('linkArea')) $('linkArea').value = url;
+          try{ history.replaceState(null,'', '#'+compressed); }catch(e){}
+          alert('Tautan berbagi dibuat. Salin tautan untuk dikirim ke kolega.');
+        }catch(e){
+          alert('Gagal membuat tautan berbagi: ' + (e && e.message));
+        }
+      });
+    }
+
+    const salinTautEl = $('salinTautan'); if(salinTautEl){
+      salinTautEl.addEventListener('click', async ()=>{
+        const val = ($('linkArea') && $('linkArea').value) || '';
+        if(!val){alert('Belum ada tautan. Silakan tekan "Buat tautan berbagi" terlebih dahulu.');return}
+        try{ await navigator.clipboard.writeText(val); alert('Tautan disalin ke clipboard.'); }catch(e){ prompt('Salin tautan berikut secara manual:', val); }
+      });
+    }
+
+    const downloadJsonEl = $('downloadJson'); if(downloadJsonEl){
+      downloadJsonEl.addEventListener('click', ()=>{
+        try{
+          const payload = buildPayload(); const blob = new Blob([JSON.stringify(payload, null, 2)],{type:'application/json'});
+          const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'agenda-guru.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }catch(e){ alert('Gagal membuat file JSON: '+ (e && e.message)); }
+      });
+    }
+
+    const resetAllEl = $('resetAll'); if(resetAllEl){
+      resetAllEl.addEventListener('click', ()=>{
+        if(!confirm('Reset akan menghapus semua data pada browser Anda. Lanjutkan?')) return;
+        try{ localStorage.removeItem('agendaGuruData'); state.identitas = { nama:'', sekolah:'', nip:'', tahunAjar:'' }; state.catatan = []; state.buku = []; state.ketercapaian = []; renderAll(); if($('linkArea')) $('linkArea').value = ''; }
+        catch(e){ console.warn('Gagal mereset', e); }
+      });
+    }
+
+    // On unload save
+    window.addEventListener('beforeunload', ()=>{ try{ saveToLocal(state) }catch(e){}})
+  </script>
+</body>
+</html>
