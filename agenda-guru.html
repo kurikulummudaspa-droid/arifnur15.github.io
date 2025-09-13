@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agenda Guru — Identitas · Catatan · Buku · Ketercapaian</title>
+  <style>
+    /* Mobile-first, simple clean UI */
+    :root{--bg:#f7f8fa;--card:#ffffff;--muted:#6b7280;--accent:#064e3b}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:var(--bg); color:#0f172a}
+    .container{max-width:900px;margin:16px auto;padding:16px}
+    header{display:flex;gap:12px;align-items:center}
+    h1{font-size:1.125rem;margin:0}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,0.05);padding:14px;margin-top:12px}
+    label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px}
+    input[type=text], input[type=date], textarea, select{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:0.95rem}
+    textarea{min-height:100px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted);font-size:0.9rem}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left;font-size:0.95rem}
+    .small{font-size:0.85rem}
+    .flex{display:flex;gap:8px;align-items:center}
+    .pill{background:#eef6f3;color:#064e3b;padding:6px 8px;border-radius:999px;font-weight:600;font-size:0.85rem}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .textarea-small{min-height:70px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Agenda Guru</h1>
+        <p class="muted">Formulir digital untuk rekam identitas, catatan harian, buku yang dibaca, dan ketercapaian tujuan pembelajaran.</p>
+      </div>
+      <div style="margin-left:auto" class="pill">Versi: 1.0</div>
+    </header>
+
+    <!-- IDENTITAS -->
+    <section class="card" id="section-identitas">
+      <h2 style="margin:0 0 8px 0">Identitas</h2>
+      <div class="row row-2">
+        <div>
+          <label for="nama">Nama Guru</label>
+          <input id="nama" type="text" placeholder="Nama lengkap" />
+        </div>
+        <div>
+          <label for="sekolah">Sekolah / Unit</label>
+          <input id="sekolah" type="text" placeholder="Nama sekolah" />
+        </div>
+      </div>
+      <div class="row row-2" style="margin-top:8px">
+        <div>
+          <label for="mapel">Mata Pelajaran</label>
+          <input id="mapel" type="text" placeholder="Contoh: Kimia Kelas XI" />
+        </div>
+        <div>
+          <label for="kelas">Kelas / Rombel</label>
+          <input id="kelas" type="text" placeholder="Contoh: XI IPA 1" />
+        </div>
+      </div>
+    </section>
+
+    <!-- CATATAN HARIAN -->
+    <section class="card" id="section-catatan" style="margin-top:16px">
+      <h2 style="margin:0 0 8px 0">Catatan Harian</h2>
+      <div class="row row-2">
+        <div>
+          <label for="tanggal">Tanggal</label>
+          <input id="tanggal" type="date" />
+        </div>
+        <div>
+          <label for="durasi">Durasi / Jam Pelajaran</label>
+          <input id="durasi" type="text" placeholder="Contoh: 2 JP / 90 menit" />
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label for="kegiatan">Rincian Kegiatan</label>
+        <textarea id="kegiatan" placeholder="Ringkas kegiatan pembelajaran: metode, media, dan tahapan"></textarea>
+      </div>
+      <div style="margin-top:8px">
+        <label for="kendala">Kendala & Tindak Lanjut</label>
+        <textarea id="kendala" class="textarea-small" placeholder="Catat kendala yang muncul dan rencana perbaikan / tindak lanjut"></textarea>
+      </div>
+      <div style="margin-top:10px" class="controls">
+        <button class="btn" onclick="saveDaily()">Simpan Catatan</button>
+        <button class="btn" onclick="addDailyToTable()" style="background:#2563eb">Tambah ke Tabel</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <h3 style="margin:0 0 8px 0">Daftar Catatan</h3>
+        <table id="table-daily"><thead><tr><th>Tanggal</th><th>Rincian</th><th>Kendala / Tindak Lanjut</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- BUKU YANG DIBACA -->
+    <section class="card" id="section-buku" style="margin-top:16px">
+      <h2 style="margin:0 0 8px 0">Buku yang Dibaca</h2>
+      <div class="row row-3">
+        <div>
+          <label for="judul">Judul</label>
+          <input id="judul" type="text" placeholder="Judul buku" />
+        </div>
+        <div>
+          <label for="penulis">Penulis</label>
+          <input id="penulis" type="text" placeholder="Nama penulis / editor" />
+        </div>
+        <div>
+          <label for="tanggal-baca">Tanggal Selesai</label>
+          <input id="tanggal-baca" type="date" />
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label for="refleksi">Refleksi / Kegunaan untuk Pembelajaran</label>
+        <textarea id="refleksi" placeholder="Bagaimana buku ini bisa digunakan dalam pembelajaran atau pengembangan profesional"></textarea>
+      </div>
+      <div style="margin-top:8px" class="controls">
+        <button class="btn" onclick="addBook()">Tambahkan Buku</button>
+        <button class="btn" onclick="exportBooks()" style="background:#6b21a8">Ekspor Buku (JSON)</button>
+      </div>
+      <div style="margin-top:12px">
+        <table id="table-books"><thead><tr><th>Judul</th><th>Penulis</th><th>Tanggal</th><th>Refleksi</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- KETERPCAIAN TUJUAN PEMBELAJARAN -->
+    <section class="card" id="section-ketercapaian" style="margin-top:16px">
+      <h2 style="margin:0 0 8px 0">Ketercapaian Tujuan Pembelajaran</h2>
+      <p class="muted small">Masukkan tujuan pembelajaran, indikator, bukti/observasi, dan status capaian (Belum / Sebagian / Tercapai).</p>
+      <div class="row row-2">
+        <div>
+          <label for="tujuan">Tujuan Pembelajaran</label>
+          <input id="tujuan" type="text" placeholder="Contoh: Siswa dapat menjelaskan faktor yang mempengaruhi laju reaksi" />
+        </div>
+        <div>
+          <label for="indikator">Indikator</label>
+          <input id="indikator" type="text" placeholder="Contoh: Menyelesaikan soal percobaan 8/10 benar" />
+        </div>
+      </div>
+      <div style="margin-top:8px" class="row">
+        <div>
+          <label for="bukti">Bukti / Observasi</label>
+          <textarea id="bukti" class="textarea-small" placeholder="Contoh: Lembar kerja, hasil tes, rekaman presentasi"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:8px" class="row row-2">
+        <div>
+          <label for="status">Status Capaian</label>
+          <select id="status"><option>Belum</option><option>Sebagian</option><option>Tercapai</option></select>
+        </div>
+        <div>
+          <label for="skor">Skor / Persentase</label>
+          <input id="skor" type="text" placeholder="Contoh: 75% atau 3/4" />
+        </div>
+      </div>
+      <div style="margin-top:8px" class="controls">
+        <button class="btn" onclick="addAchievement()">Simpan Tujuan</button>
+        <button class="btn" onclick="exportAchievements()" style="background:#d97706">Ekspor (CSV)</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <table id="table-achievements"><thead><tr><th>Tujuan</th><th>Indikator</th><th>Status</th><th>Skor</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- GLOBAL ACTIONS -->
+    <section style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="saveAll()">Simpan Semua ke localStorage</button>
+      <button class="btn" style="background:#059669" onclick="downloadAll()">Unduh Semua (JSON)</button>
+      <button class="btn" style="background:#ef4444" onclick="clearAll()">Hapus Semua Data</button>
+    </section>
+
+    <footer style="margin-top:20px;text-align:center;color:var(--muted);font-size:0.85rem">Template: Agenda Guru — Untuk dokumentasi profesional dan tindak lanjut pembelajaran.</footer>
+  </div>
+
+  <script>
+    // Simple client-side storage and table rendering
+    function qs(id){return document.getElementById(id)}
+
+    // UTIL: create row with delete
+    function createDeleteButton(onclick){const btn=document.createElement('button');btn.textContent='Hapus';btn.className='btn';btn.style.background='#ef4444';btn.onclick=onclick;return btn}
+
+    // DAILY
+    function addDailyToTable(){const t=qs('table-daily').querySelector('tbody');const date=qs('tanggal').value||new Date().toISOString().slice(0,10);const kegiatan=qs('kegiatan').value;const kendala=qs('kendala').value;const tr=document.createElement('tr');tr.innerHTML=`<td>${date}</td><td class="small">${escapeHtml(kegiatan)}</td><td class="small">${escapeHtml(kendala)}</td>`;const td=document.createElement('td');td.appendChild(createDeleteButton(()=>{tr.remove();saveDaily() }));tr.appendChild(td);t.prepend(tr);saveDaily();clearDailyInputs()}
+    function saveDaily(){const rows=[...qs('table-daily').querySelectorAll('tbody tr')].map(r=>({tanggal:r.cells[0].innerText,rincian:r.cells[1].innerText,kendala:r.cells[2].innerText}));localStorage.setItem('agenda.daily',JSON.stringify(rows))}
+    function loadDaily(){const raw=localStorage.getItem('agenda.daily');if(!raw) return;const rows=JSON.parse(raw);const t=qs('table-daily').querySelector('tbody');t.innerHTML='';rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r.tanggal}</td><td class="small">${escapeHtml(r.rincian)}</td><td class="small">${escapeHtml(r.kendala)}</td>`;const td=document.createElement('td');td.appendChild(createDeleteButton(()=>{tr.remove();saveDaily()}));tr.appendChild(td);t.appendChild(tr)})}
+    function clearDailyInputs(){qs('kegiatan').value='';qs('kendala').value='';qs('durasi').value='';}
+
+    // BOOKS
+    function addBook(){const title=qs('judul').value.trim();if(!title){alert('Masukkan judul buku');return}const author=qs('penulis').value;const date=qs('tanggal-baca').value;const refl=qs('refleksi').value;const books=getBooks();books.unshift({title,author,date,reflection:refl});localStorage.setItem('agenda.books',JSON.stringify(books));renderBooks();clearBookInputs()}
+    function getBooks(){const raw=localStorage.getItem('agenda.books');return raw?JSON.parse(raw):[]}
+    function renderBooks(){const t=qs('table-books').querySelector('tbody');t.innerHTML='';getBooks().forEach((b,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${escapeHtml(b.title)}</td><td class="small">${escapeHtml(b.author||'')}</td><td class="small">${b.date||''}</td><td class="small">${escapeHtml(b.reflection||'')}</td>`;const td=document.createElement('td');td.appendChild(createDeleteButton(()=>{removeBook(i)}));tr.appendChild(td);t.appendChild(tr)})}
+    function removeBook(index){const books=getBooks();books.splice(index,1);localStorage.setItem('agenda.books',JSON.stringify(books));renderBooks()}
+    function clearBookInputs(){qs('judul').value='';qs('penulis').value='';qs('tanggal-baca').value='';qs('refleksi').value=''}
+    function exportBooks(){const data=getBooks();const blob=new Blob([JSON.stringify(data, null, 2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='buku_dibaca.json';a.click();URL.revokeObjectURL(url)}
+
+    // ACHIEVEMENTS
+    function getAchievements(){const raw=localStorage.getItem('agenda.achievements');return raw?JSON.parse(raw):[]}
+    function addAchievement(){const tujuan=qs('tujuan').value.trim();if(!tujuan){alert('Masukkan tujuan pembelajaran');return}const indikator=qs('indikator').value;const bukti=qs('bukti').value;const status=qs('status').value;const skor=qs('skor').value;const arr=getAchievements();arr.unshift({tujuan,indikator,bukti,status,skor});localStorage.setItem('agenda.achievements',JSON.stringify(arr));renderAchievements();clearAchievementInputs()}
+    function renderAchievements(){const t=qs('table-achievements').querySelector('tbody');t.innerHTML='';getAchievements().forEach((a,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td class="small">${escapeHtml(a.tujuan)}</td><td class="small">${escapeHtml(a.indikator)}</td><td class="small">${escapeHtml(a.status)}</td><td class="small">${escapeHtml(a.skor)}</td>`;const td=document.createElement('td');td.appendChild(createDeleteButton(()=>{removeAchievement(i)}));tr.appendChild(td);t.appendChild(tr)})}
+    function removeAchievement(i){const arr=getAchievements();arr.splice(i,1);localStorage.setItem('agenda.achievements',JSON.stringify(arr));renderAchievements()}
+    function clearAchievementInputs(){qs('tujuan').value='';qs('indikator').value='';qs('bukti').value='';qs('skor').value=''}
+    function exportAchievements(){const arr=getAchievements();const csv=['"Tujuan","Indikator","Status","Skor"',...arr.map(r=>`"${r.tujuan.replace(/"/g,'""')}","${r.indikator.replace(/"/g,'""')}","${r.status}","${r.skor}"`)].join('\n');const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ketercapaian.csv';a.click();URL.revokeObjectURL(url)}
+
+    // GLOBAL
+    function saveAll(){const profile={nama:qs('nama').value,sekolah:qs('sekolah').value,mapel:qs('mapel').value,kelas:qs('kelas').value};localStorage.setItem('agenda.profile',JSON.stringify(profile));alert('Profil dan semua data tersimpan pada browser (localStorage).')}
+    function downloadAll(){const data={profile:JSON.parse(localStorage.getItem('agenda.profile')||'{}'),daily:JSON.parse(localStorage.getItem('agenda.daily')||'[]'),books:JSON.parse(localStorage.getItem('agenda.books')||'[]'),achievements:JSON.parse(localStorage.getItem('agenda.achievements')||'[]')};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='agenda_guru_all.json';a.click();URL.revokeObjectURL(url)}
+    function clearAll(){if(!confirm('Hapus semua data agenda dari browser?')) return;localStorage.removeItem('agenda.profile');localStorage.removeItem('agenda.daily');localStorage.removeItem('agenda.books');localStorage.removeItem('agenda.achievements');location.reload()}
+
+    // INITIAL LOAD
+    function loadProfile(){const raw=localStorage.getItem('agenda.profile');if(!raw) return;const p=JSON.parse(raw);qs('nama').value=p.nama||'';qs('sekolah').value=p.sekolah||'';qs('mapel').value=p.mapel||'';qs('kelas').value=p.kelas||''}
+    function init(){loadProfile();loadDaily();renderBooks();renderAchievements()}
+
+    // Helpers
+    function escapeHtml(str){if(!str) return '';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+    // Run
+    init();
+  </script>
+</body>
+</html>
