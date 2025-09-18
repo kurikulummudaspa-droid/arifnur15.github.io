@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Game Edukasi Kimia: Endoterm vs Eksoterm</title>
+  <style>
+    :root{
+      --bg:#f7fafc; --card:#ffffff; --accent:#0ea5a4; --muted:#6b7280;
+      --good:#16a34a; --bad:#dc2626;
+      --shadow: 0 6px 18px rgba(16,24,40,0.08);
+      font-family: Inter, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{background:var(--bg); margin:0; color:#0f172a; padding:18px;}
+    .container{max-width:1100px; margin:12px auto;}
+    header{display:flex; gap:12px; align-items:center; margin-bottom:14px;}
+    h1{font-size:20px; margin:0;}
+    p.lead{margin:0;color:var(--muted); font-size:14px;}
+    .panel{background:var(--card); border-radius:12px; padding:14px; box-shadow:var(--shadow); margin-bottom:14px;}
+    .flex{display:flex; gap:12px;}
+    .cols{display:grid; grid-template-columns: 1fr 360px; gap:12px;}
+    /* Game area */
+    .game-area{min-height:380px; padding:12px;}
+    .banks{display:flex; gap:12px; flex-wrap:wrap;}
+    .reaction-card{
+      background:#fff; border-radius:10px; padding:10px; width:240px;
+      box-shadow:0 4px 10px rgba(2,6,23,0.06); cursor:grab;
+      user-select:none; margin-bottom:10px;
+    }
+    .reaction-card.dragging{opacity:0.6; transform:rotate(-2deg); cursor:grabbing;}
+    .reaction-formula{font-weight:600; font-size:15px; margin-bottom:6px;}
+    .reaction-meta{font-size:13px; color:var(--muted);}
+    .bins{display:flex; gap:12px; margin-top:12px;}
+    .bin{
+      flex:1; min-height:140px; border-radius:10px; padding:10px;
+      display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:flex-start;
+      transition:background .15s, box-shadow .15s;
+      border:2px dashed rgba(15,23,42,0.06);
+    }
+    .bin.hover{background:#f0fdfa; box-shadow:0 10px 30px rgba(14,165,164,0.06);}
+    .bin-title{font-weight:700; margin-bottom:6px;}
+    .bin .hint {font-size:13px; color:var(--muted); text-align:center;}
+    /* Controls */
+    .controls{display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+    button.btn{background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;}
+    button.ghost{background:transparent; color:var(--accent); border:1px solid rgba(14,165,164,0.16);}
+    .scorebox{background:#fff; padding:10px; border-radius:10px; box-shadow:var(--shadow); text-align:center;}
+    .scorebox strong{display:block; font-size:20px; color:var(--accent);}
+    /* Quiz area */
+    .quiz{margin-top:12px;}
+    .calc-card{background:#fff; padding:12px; border-radius:10px; box-shadow:var(--shadow);}
+    label{font-size:13px; color:var(--muted);}
+    input[type="number"], select {width:100%; padding:8px; border-radius:6px; border:1px solid #e6e9ef; margin-top:6px; margin-bottom:8px;}
+    .feedback{padding:10px; border-radius:8px; margin-top:8px;}
+    .feedback.good{background:rgba(16,185,129,0.08); color:var(--good); border:1px solid rgba(16,185,129,0.12);}
+    .feedback.bad{background:rgba(239,68,68,0.06); color:var(--bad); border:1px solid rgba(239,68,68,0.12);}
+    footer{color:var(--muted); margin-top:12px; font-size:13px;}
+    @media (max-width:900px){
+      .cols{grid-template-columns: 1fr;}
+      .reaction-card{width:100%;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Game Edukasi: Endoterm vs Eksoterm</h1>
+        <p class="lead">Kategorikan reaksi, hitung perubahan entalpi, dan pahami keterkaitan energi di lingkungan.</p>
+      </div>
+      <div style="margin-left:auto" class="scorebox panel">
+        <div>Skor</div>
+        <strong id="score">0</strong>
+        <small id="roundInfo">0 / 8 soal</small>
+      </div>
+    </header>
+
+    <div class="cols">
+      <main>
+        <section class="panel game-area" aria-label="Area permainan">
+          <h3 style="margin-top:0">Instruksi Singkat</h3>
+          <ol style="margin:6px 0 12px 18px; color:var(--muted); font-size:14px;">
+            <li>Seret kartu reaksi ke <strong>Bin Eksoterm</strong> atau <strong>Bin Endoterm</strong> berdasarkan tanda ΔH (negatif = eksoterm, positif = endoterm).</li>
+            <li>Setiap penempatan benar mendapat +10 poin; salah = -5 poin. Ada 8 kartu per ronde.</li>
+            <li>Setelah kategori, kerjakan soal hitung ΔH (opsional) untuk ekstra +15 poin jika benar.</li>
+            <li>Gunakan tombol <em>Acak</em> untuk soal baru, dan <em>Reset</em> untuk mulai ulang.</li>
+          </ol>
+
+          <div class="banks" id="bank"></div>
+
+          <div class="bins" aria-hidden="false">
+            <div id="bin-exo" class="bin" data-type="exo" role="region" aria-label="Bin Eksoterm">
+              <div class="bin-title">Bin Eksoterm (ΔH &lt; 0)</div>
+              <div class="hint">Tarik reaksi yang melepaskan panas.</div>
+            </div>
+            <div id="bin-endo" class="bin" data-type="endo" role="region" aria-label="Bin Endoterm">
+              <div class="bin-title">Bin Endoterm (ΔH &gt; 0)</div>
+              <div class="hint">Tarik reaksi yang menyerap panas.</div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="btn" id="shuffleBtn">Acak Soal</button>
+            <button class="ghost" id="resetBtn">Reset</button>
+            <div style="margin-left:auto; color:var(--muted); font-size:13px;">
+              <span id="roundText">Ronde 0</span>
+            </div>
+          </div>
+
+          <div id="message" style="margin-top:10px;"></div>
+        </section>
+      </main>
+
+      <aside>
+        <section class="panel">
+          <h4 style="margin:0 0 8px 0">Soal Hitung ΔH (Entalpi Pembentukan)</h4>
+          <div class="calc-card">
+            <p style="margin:6px 0; color:var(--muted); font-size:13px;">
+              Pilih reaksi, masukkan entalpi pembentukan (kJ/mol) tiap zat, dan hitung ΔH°rxn = ΣΔH°f (produk) − ΣΔH°f (reaktan).
+            </p>
+            <label for="reactionSelect">Pilih Reaksi</label>
+            <select id="reactionSelect"></select>
+
+            <div id="formationInputs" style="margin-top:8px;"></div>
+
+            <button class="btn" id="calcBtn">Hitung ΔH°</button>
+            <div id="calcResult" style="margin-top:8px"></div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <h5 style="margin:0 0 6px 0">Petunjuk Akademis</h5>
+            <p style="margin:0; color:var(--muted); font-size:13px;">
+              - Eksoterm: ΔH°rxn &lt; 0 (melepaskan energi).<br>
+              - Endoterm: ΔH°rxn &gt; 0 (menyerap energi).<br>
+              - Perhitungan dengan entalpi pembentukan standar (ΔH°f).
+            </p>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:12px">
+          <h4 style="margin:0 0 8px 0">Nilai & Info</h4>
+          <p style="margin:0; color:var(--muted); font-size:13px;">
+            Penempatan benar: <strong>+10</strong> poin.<br>
+            Penempatan salah: <strong>-5</strong> poin.<br>
+            Jawaban perhitungan benar: <strong>+15</strong> poin.
+          </p>
+        </section>
+      </aside>
+    </div>
+
+    <footer>
+      <small>Dirancang untuk pembelajaran konsep termokimia: reaksi eksoterm vs endoterm dan perhitungan ΔH° menggunakan entalpi pembentukan. Bapak dapat menambah data reaksi pada variabel <code>REACTIONS</code> dalam kode.</small>
+    </footer>
+  </div>
+
+  <script>
+    /***********************
+     * DATA: reaksi contoh
+     * - id: unik
+     * - formula: tampilan
+     * - label: keterangan singkat
+     * - dh: nilai ΔH (kJ) untuk kategori (negatif: eksoterm)
+     * - formation: optional – entalpi pembentukan per substansi (kJ/mol)
+     ***********************/
+    const REACTIONS = [
+      { id:'r1', formula:'2 H₂ (g) + O₂ (g) → 2 H₂O (l)', label:'Pembakaran hidrogen → air', dh: -571.6,
+        formation: { 'H2(g)':0, 'O2(g)':0, 'H2O(l)': -285.8 } },
+      { id:'r2', formula:'N₂ (g) + O₂ (g) → 2 NO (g)', label:'Pembentukan NO', dh: 180.5,
+        formation: { 'N2(g)':0, 'O2(g)':0, 'NO(g)':90.25 } },
+      { id:'r3', formula:'C (grafit) + O₂ (g) → CO₂ (g)', label:'Pembakaran karbon', dh: -393.5,
+        formation: { 'C(graphite)':0, 'O2(g)':0, 'CO2(g)': -393.5 } },
+      { id:'r4', formula:'CaCO₃ (s) → CaO (s) + CO₂ (g)', label:'Decomposisi kalsium karbonat', dh: 178.3,
+        formation: { 'CaCO3(s)': -1206.9, 'CaO(s)': -635.5, 'CO2(g)': -393.5 } },
+      { id:'r5', formula:'6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂', label:'Fotosintesis sederhana', dh: 2803,
+        formation: { 'CO2(g)': -393.5, 'H2O(l)': -285.8, 'C6H12O6(s)': -1273.3, 'O2(g)':0 } },
+      { id:'r6', formula:'2 H₂O (l) → 2 H₂ (g) + O₂ (g)', label:'Elektrolisis air', dh: 571.6,
+        formation: { 'H2O(l)': -285.8, 'H2(g)':0, 'O2(g)':0 } },
+      { id:'r7', formula:'CH₄ (g) + 2 O₂ (g) → CO₂ (g) + 2 H₂O (l)', label:'Pembakaran metana', dh: -890.3,
+        formation: { 'CH4(g)': -74.8, 'O2(g)':0, 'CO2(g)': -393.5, 'H2O(l)': -285.8 } },
+      { id:'r8', formula:'2 NO₂ (g) → N₂O₄ (g)', label:'Pembentukan dimer N₂O₄', dh: -57.2,
+        formation: { 'NO2(g)':33.1, 'N2O4(g)': -24 } }
+    ];
+
+    // State
+    let score = 0;
+    let currentRound = 0;
+    const TOTAL_ROUNDS = 8;
+    let activeCards = [];
+
+    // DOM
+    const bankEl = document.getElementById('bank');
+    const exoBin = document.getElementById('bin-exo');
+    const endoBin = document.getElementById('bin-endo');
+    const scoreEl = document.getElementById('score');
+    const roundText = document.getElementById('roundText');
+    const roundInfo = document.getElementById('roundInfo');
+    const messageEl = document.getElementById('message');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Quiz elements
+    const reactionSelect = document.getElementById('reactionSelect');
+    const formationInputs = document.getElementById('formationInputs');
+    const calcBtn = document.getElementById('calcBtn');
+    const calcResult = document.getElementById('calcResult');
+
+    // Utilities
+    function randSample(arr, n){
+      const copy = arr.slice();
+      const out = [];
+      for(let i=0;i<n && copy.length;i++){
+        const idx = Math.floor(Math.random()*copy.length);
+        out.push(copy.splice(idx,1)[0]);
+      }
+      return out;
+    }
+
+    function formatNumber(n){
+      return Math.round(n*10)/10;
+    }
+
+    // Create card elements
+    function createCard(reaction){
+      const card = document.createElement('div');
+      card.className = 'reaction-card';
+      card.setAttribute('draggable','true');
+      card.dataset.id = reaction.id;
+      card.innerHTML = `
+        <div class="reaction-formula">${reaction.formula}</div>
+        <div class="reaction-meta">${reaction.label}</div>
+        <div style="margin-top:8px; font-size:12px; color:var(--muted)">(ΔH contoh: ${reaction.dh>0?'+':''}${reaction.dh} kJ)</div>
+      `;
+      // Drag events
+      card.addEventListener('dragstart', e=>{
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', reaction.id);
+        // For Firefox compatibility
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', ()=>{
+        card.classList.remove('dragging');
+      });
+      return card;
+    }
+
+    function renderBank(cards){
+      bankEl.innerHTML = '';
+      cards.forEach(r=>{
+        bankEl.appendChild(createCard(r));
+      });
+    }
+
+    // Bin events
+    [exoBin, endoBin].forEach(bin=>{
+      bin.addEventListener('dragover', e=>{
+        e.preventDefault();
+        bin.classList.add('hover');
+      });
+      bin.addEventListener('dragleave', ()=> bin.classList.remove('hover'));
+      bin.addEventListener('drop', e=>{
+        e.preventDefault();
+        bin.classList.remove('hover');
+        const id = e.dataTransfer.getData('text/plain');
+        handleDrop(id, bin.dataset.type);
+      });
+    });
+
+    function handleDrop(id, type){
+      const idx = activeCards.findIndex(c=>c.id===id);
+      if(idx === -1) return;
+      const reaction = activeCards[idx];
+      const correctType = reaction.dh < 0 ? 'exo' : 'endo';
+      const cardEl = bankEl.querySelector(`[data-id="${id}"]`);
+      // Remove the card visually
+      if(cardEl) cardEl.remove();
+      // Update score and message
+      if(type === correctType){
+        score += 10;
+        showMessage(`Benar — ${reaction.formula} adalah ${type === 'exo' ? 'Eksoterm' : 'Endoterm'}. (+10)`, 'good');
+      } else {
+        score -= 5;
+        showMessage(`Salah — ${reaction.formula} seharusnya ${correctType === 'exo' ? 'Eksoterm' : 'Endoterm'}. (-5)`, 'bad');
+      }
+      // remove from active
+      activeCards.splice(idx,1);
+      updateScore();
+      // If round completed
+      if(activeCards.length === 0){
+        currentRound++;
+        roundText.textContent = `Ronde ${currentRound}`;
+        roundInfo.textContent = `${currentRound} / ${TOTAL_ROUNDS} soal`;
+        if(currentRound >= TOTAL_ROUNDS){
+          showMessage(`Ronde selesai. Skor akhir: ${score}. Gunakan 'Acak Soal' untuk mengulang.`, score>=0?'good':'bad');
+        } else {
+          showMessage(`Selesaikan soal hitung ΔH untuk poin bonus atau lanjutkan ke ronde berikutnya.`, 'good');
+        }
+      }
+    }
+
+    function showMessage(txt, type){
+      messageEl.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'feedback ' + (type === 'good' ? 'good' : type === 'bad' ? 'bad' : 'good');
+      wrap.textContent = txt;
+      messageEl.appendChild(wrap);
+    }
+
+    function updateScore(){
+      scoreEl.textContent = score;
+    }
+
+    function startRound(){
+      // pick 8 random reactions for the round (or fewer if dataset small)
+      activeCards = randSample(REACTIONS, Math.min(8, REACTIONS.length)).map(x=>Object.assign({}, x));
+      renderBank(activeCards);
+      showMessage('Tarik setiap kartu reaksi ke bin yang sesuai (Eksoterm / Endoterm).', 'good');
+    }
+
+    // Reset game
+    function resetGame(){
+      score = 0;
+      currentRound = 0;
+      updateScore();
+      roundText.textContent = 'Ronde 0';
+      roundInfo.textContent = `0 / ${TOTAL_ROUNDS} soal`;
+      bankEl.innerHTML = '';
+      activeCards = [];
+      messageEl.innerHTML = '';
+      calcResult.innerHTML = '';
+      reactionSelect.innerHTML = '';
+      formationInputs.innerHTML = '';
+    }
+
+    // Populate reaction select for calculation quiz
+    function populateReactionSelect(){
+      reactionSelect.innerHTML = '';
+      REACTIONS.forEach(r=>{
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = r.formula;
+        reactionSelect.appendChild(opt);
+      });
+      reactionSelect.addEventListener('change', renderFormationInputs);
+      renderFormationInputs();
+    }
+
+    function renderFormationInputs(){
+      const rid = reactionSelect.value;
+      const reaction = REACTIONS.find(r=>r.id===rid);
+      formationInputs.innerHTML = '';
+      if(!reaction) return;
+      // If formation data exists, prefill it; else provide blank inputs
+      const species = Object.keys(reaction.formation || {});
+      species.forEach(sp=>{
+        const wrap = document.createElement('div');
+        wrap.style.marginBottom = '6px';
+        const lbl = document.createElement('label');
+        lbl.textContent = `${sp} (ΔH°f kJ/mol)`;
+        const inp = document.createElement('input');
+        inp.type = 'number';
+        inp.step = '0.1';
+        inp.value = reaction.formation ? reaction.formation[sp] : '';
+        inp.dataset.species = sp;
+        wrap.appendChild(lbl);
+        wrap.appendChild(inp);
+        formationInputs.appendChild(wrap);
+      });
+    }
+
+    // Calculation handler
+    calcBtn.addEventListener('click', ()=>{
+      calcResult.innerHTML = '';
+      const rid = reactionSelect.value;
+      const reaction = REACTIONS.find(r=>r.id===rid);
+      if(!reaction) return;
+      // parse stoichiometry from formula for simple cases, but safer: we will derive stoich by scanning keys in formation
+      // For didactic purposes we assume formation object keys correspond to species with their stoichiometric coefficient encoded elsewhere.
+      // Here we compute using the formation data provided in REACTIONS (which are stoichiometrically consistent).
+      // Implementation: compute sum(products) - sum(reactants) using pre-specified formation object and reaction side detection.
+      // We'll attempt simple parsing: split at arrow '→' or '=>' or '->'
+      const arrow = reaction.formula.includes('→') ? '→' : reaction.formula.includes('->') ? '->' : '=>';
+      const parts = reaction.formula.split(arrow);
+      if(parts.length < 2){
+        calcResult.innerHTML = `<div class="feedback bad">Format reaksi tidak dapat diurai.</div>`;
+        return;
+      }
+      const left = parts[0].trim();
+      const right = parts[1].trim();
+
+      // helper: parse species and coefficients (basic)
+      function parseSide(side){
+        // split by +, then trim. Handle stoich like "2 H2O (l)"
+        const items = side.split('+').map(s=>s.trim()).filter(Boolean);
+        const parsed = [];
+        items.forEach(it=>{
+          // capture coefficient at start
+          const coefMatch = it.match(/^(\d+)\s+(.*)$/);
+          let coef = 1;
+          let species = it;
+          if(coefMatch){
+            coef = parseInt(coefMatch[1],10);
+            species = coefMatch[2];
+          }
+          // remove state annotations like (g), (l), (s)
+          species = species.replace(/\([a-z]+\)/gi,'').trim();
+          parsed.push({species, coef});
+        });
+        return parsed;
+      }
+      const reactants = parseSide(left);
+      const products = parseSide(right);
+
+      // collect ΔHf inputs
+      const inputs = formationInputs.querySelectorAll('input');
+      const dhf = {};
+      inputs.forEach(inp=>{
+        const sp = inp.dataset.species;
+        const val = parseFloat(inp.value);
+        if(!isNaN(val)) dhf[sp] = val;
+      });
+
+      // compute sum products - sum reactants
+      let sumProd = 0, sumReac = 0;
+      let missing = [];
+      products.forEach(p=>{
+        const key = Object.keys(reaction.formation || {}).find(k=>k.replace(/\s+/g,'').toLowerCase().startsWith(p.species.replace(/\s+/g,'').toLowerCase()));
+        // attempt direct match fallback
+        const v = dhf[key || p.species];
+        if(v === undefined) missing.push(p.species);
+        else sumProd += (v * p.coef);
+      });
+      reactants.forEach(r=>{
+        const key = Object.keys(reaction.formation || {}).find(k=>k.replace(/\s+/g,'').toLowerCase().startsWith(r.species.replace(/\s+/g,'').toLowerCase()));
+        const v = dhf[key || r.species];
+        if(v === undefined) missing.push(r.species);
+        else sumReac += (v * r.coef);
+      });
+
+      if(missing.length){
+        calcResult.innerHTML = `<div class="feedback bad">Masukkan ΔH°f untuk: ${[...new Set(missing)].join(', ')}.</div>`;
+        return;
+      }
+      const dh_rxn = sumProd - sumReac;
+      const dh_tag = dh_rxn < 0 ? 'Eksoterm (ΔH < 0)' : (dh_rxn > 0 ? 'Endoterm (ΔH > 0)' : 'Netral (ΔH = 0)');
+      calcResult.innerHTML = `<div class="feedback good">ΔH°rxn = ${formatNumber(dh_rxn)} kJ — ${dh_tag}</div>`;
+      // If result matches reaction.dh within tolerance -> award points
+      const tolerance = 5; // kJ tolerance
+      if(Math.abs(dh_rxn - reaction.dh) <= tolerance){
+        score += 15;
+        updateScore();
+        showMessage(`Perhitungan benar sesuai data contoh (±${tolerance} kJ). +15 poin.`, 'good');
+      } else {
+        showMessage(`Perhitungan berbeda dari nilai contoh (${reaction.dh} kJ). Tidak ada bonus.`, 'bad');
+      }
+    });
+
+    // Buttons
+    shuffleBtn.addEventListener('click', ()=>{
+      if(currentRound >= TOTAL_ROUNDS){
+        // reset rounds but keep score
+        currentRound = 0;
+        roundText.textContent = 'Ronde 0';
+        roundInfo.textContent = `0 / ${TOTAL_ROUNDS} soal`;
+      }
+      startRound();
+    });
+
+    resetBtn.addEventListener('click', ()=> {
+      if(confirm('Reset permainan akan menghapus skor dan ronde. Lanjutkan?')){
+        resetGame();
+      }
+    });
+
+    // Initialize
+    function init(){
+      resetGame();
+      populateReactionSelect();
+    }
+    init();
+
+    // Accessibility: keyboard drag alternative
+    // Allow selecting a card and assigning with keyboard: not implemented fully here but placeholder for extension.
+
+  </script>
+</body>
+</html>
